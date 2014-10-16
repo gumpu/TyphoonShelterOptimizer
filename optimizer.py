@@ -14,7 +14,6 @@ from   docopt import docopt
 import random
 import   math
 
-
 #---------------------------------------------------------------------------
 # Simulated Annealing
 #

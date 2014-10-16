@@ -1,5 +1,4 @@
 # vi: spell spl=en
-#
 
 import re
 from shelter import Shelter
@@ -10,6 +9,7 @@ import random
 
 
 def dist(x1, y1, x2, y2):
+    """Distance between two locations"""
     dx = x1 - x2
     dy = y1 - y2
     return math.sqrt(dx*dx + dy*dy)
@@ -17,7 +17,7 @@ def dist(x1, y1, x2, y2):
 
 class Assignment(object):
     def __init__(self, village, shelter, count):
-        self.village    = village
+        self.village = village
         self.shelter = shelter
         self.count   = count
 
@@ -30,15 +30,13 @@ class Assignment(object):
            Cost to build the shelter
            Cost to open the shelter if it is not there yet
 
-            This need to be balanced too.
+            This needs to be balanced too.
         """
 
         return self.count*dist(self.shelter.position[0],
                     self.shelter.position[1],
                     self.village.cx,
                     self.village.cy)
-        # Simply use only the cost to test first debug SA.
-#        return self.shelter.cost
 
 
     def __str__(self):
@@ -47,10 +45,10 @@ class Assignment(object):
 
 class Node(object):
     def __init__(self):
-        self.shelters     = [] # Ordered list of shelters
-        self.villages        = [] # Ordered list of villages
+        self.shelters    = [] # Ordered list of shelters
+        self.villages    = [] # Ordered list of villages
         # The current solution
-        self.assignments  = [] # how many students are assigned to which shelter
+        self.assignments = [] # how many students are assigned to which shelter
         #self.shelters_used = [] # Which of the shelters are used
 
     def __str__(self):
@@ -77,7 +75,6 @@ class Node(object):
             print("not found {}".format(shelter_id))
             return None   # Returns assignment index
         else:
-            #print(ids)
             return random.choice(ids)
 
 
@@ -95,6 +92,7 @@ class Node(object):
         return id
 
     def pick_any_shelter(self, exclude=None):
+        """Pick any one of the shelters"""
         n = len(self.shelters)
         id = random.randint(0, n-1)
         if exclude is not None:
@@ -104,18 +102,14 @@ class Node(object):
 
     def add_assignment(self, assignment):
         found = False
-        # print(assignment)
         for a in self.assignments:
             if (a.shelter.id == assignment.shelter.id and
-                a.village.id   == assignment.village.id):
-                #print(a)
-                a.count       += assignment.count
-                #a.shelter.used += assignment.count
+                a.village.id == assignment.village.id):
+
+                a.count      += assignment.count
                 found = True
-                #print(a)
                 break
 
-        #print(found)
         if not found:
             self.assignments.append(assignment)
 
@@ -166,9 +160,12 @@ class Node(object):
                 p.box(s.position[0], s.position[1],
                         r=8+8*s.capacity*s.capacity/49)
 
+            # Plot the villages
             for village in self.villages:
                 p.dot(village.cx, village.cy, r=8)
 
+            # Plot the assignments by showing a line
+            # between the village and shelter
             if assignment:
                 for a in self.assignments:
                     village = a.village
@@ -177,11 +174,13 @@ class Node(object):
                            shelter.position[0], shelter.position[1], 
                            color="red" )
 
+            # Plot the shelters
             id = 0
             for s in self.shelters:
                 p.label(s.position[0], s.position[1], str(id))
                 id += 1
 
+            # Add the village labels 
             id = 0
             for a in self.villages:
                 p.label(a.cx, a.cy, str(id))
@@ -191,6 +190,8 @@ class Node(object):
 
     def read_problem(self, filename):
         """Read the problem from file"""
+
+        # This is a very simple parser.
         village_id   = 0
         shelter_id = 0
         with open(filename, "r") as problem_file:
