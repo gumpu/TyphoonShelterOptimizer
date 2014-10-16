@@ -1,10 +1,16 @@
-# vi: spell spl=en
-#
+#!/usr/bin/env python2
+"""
+Usage:
+    optimizer.py <problem>
+
+"""
+
 import re
 from  shelter import Shelter
 from     node import Node, Assignment
 from  village import Village
 from   svgout import Plot
+from   docopt import docopt
 import random
 import   math
 
@@ -12,13 +18,11 @@ import   math
 #---------------------------------------------------------------------------
 # Simulated Annealing
 #
-#
-#
 
 # TODO Refactor
-#
 def sa(node):
     cooling_factor = 0.9999   # This needs to be properly tuned
+    # TODO this needs to be determined automatically.
     temperature    = 8800.0   # This needs to be properly tuned
 
     best_score = None
@@ -112,7 +116,6 @@ def sa(node):
                         cost_new += new_assignment2.cost()
                         # TODO should take in account new_assignment2
 
-                    # print("Old {}  New {}".format(cost_old, cost_new))
                     # Compute what we would gain by doing this move.
                     # We want to drive the cost down. This computes
                     # by how much we drive it down (gain > 0 is good)
@@ -141,35 +144,39 @@ def sa(node):
     print("done")
 
 
-#================================================================
+if __name__ == '__main__':
+    arguments = docopt(__doc__)
 
-random.seed(19671111)
+    problem_file = arguments['<problem>']
 
-node = Node()
-# Read the problem from file
-# node.read_problem("problem.txt")
-#node.read_problem("problem_1.txt")
-node.read_problem("ExampleProblems/problem_2.txt")
-#node.read_problem("problem_3.txt")
-#node.read_problem("problem_4.txt")
+    #================================================================
+    # Set the seed for the random generator. This will make
+    # the results reproducible and therefore easier to debug.
+    #
+    random.seed(19671111)
 
-print(str(node))
-# Create a initial solution we can optimize from
-node.initial_solution()
-# Plot the problem
-node.plot(id=1, assignment=False)
-# Plot the initial solution
-node.plot(id=2)
+    node = Node()
+    # Read the problem from file
+    node.read_problem(problem_file)
 
-# Use simulated annealing to optimize the initial solution
-sa(node)
+    print(str(node))
+    # Create a initial solution we can optimize from
+    node.initial_solution()
+    # Plot the problem
+    node.plot(id=1, assignment=False)
+    # Plot the initial solution
+    node.plot(id=2)
 
-# Report the solution
-with open("report.txt", "w") as report_file:
-    node.print_solution(report_file)
+    # Use simulated annealing to optimize the initial solution
+    sa(node)
 
-# Create a visualization in svg
-node.plot(id=3)
+    # Report the solution
+    with open("report.txt", "w") as report_file:
+        node.print_solution(report_file)
 
-#print(node)
+    # Create a visualization in svg
+    node.plot(id=3)
 
+    #print(node)
+
+# vi: spell spl=en
