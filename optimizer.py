@@ -149,7 +149,7 @@ node = Node()
 # Read the problem from file
 # node.read_problem("problem.txt")
 #node.read_problem("problem_1.txt")
-node.read_problem("problem_2.txt")
+node.read_problem("ExampleProblems/problem_2.txt")
 #node.read_problem("problem_3.txt")
 #node.read_problem("problem_4.txt")
 
