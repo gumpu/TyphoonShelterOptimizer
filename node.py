@@ -40,8 +40,7 @@ class Assignment(object):
 
 
     def __str__(self):
-        return "{} -> ({:5d}) -> {}".format(
-                self.village.id, self.count, self.shelter.id)
+        return "{} -> {}".format(self.village.id, self.shelter.id)
 
 class Node(object):
     def __init__(self):
@@ -77,6 +76,15 @@ class Node(object):
         else:
             return random.choice(ids)
 
+    def pick_unused_sheter(self, exclude=None):
+        ids = []
+        for i in range(0, len(self.shelters)):
+            if shelters.used == 0:
+                ids.append(i)
+        if len(ids) == 0:
+            return None   # Returns assignment index
+        else:
+            return random.choice(ids)
 
     def pick_used_shelter(self, exclude=None):
         """Pick one of the shelters that are already used in one or
@@ -88,7 +96,7 @@ class Node(object):
                 (exclude is not None) and (id == exclude)) :
             id = random.randint(0, n-1)
 
-        assert(self.shelters[id].used >0)
+        assert(self.shelters[id].used > 0)
         return id
 
     def pick_any_shelter(self, exclude=None):
@@ -100,40 +108,44 @@ class Node(object):
                 id = random.randint(0, n-1)
         return id
 
-    def add_assignment(self, assignment):
+    def remove_assignment(self, assignment):
+
         found = False
         for a in self.assignments:
             if (a.shelter.id == assignment.shelter.id and
                 a.village.id == assignment.village.id):
 
-                a.count      += assignment.count
                 found = True
                 break
+        assert(found)
+        assignment.shelter.used -= 1
+        self.assignments.remove(assignment)
 
-        if not found:
-            self.assignments.append(assignment)
+    def add_assignment(self, assignment):
+        """Add an assignment.
+        Updates the shelter to reflect the assignment."""
+
+        assignment.shelter.used += 1
+        self.assignments.append(assignment)
 
 
     def initial_solution(self):
         """Create a greedy initial solution"""
         for a in self.villages:
-            demand = a.demand
+            found = False
             for s in self.shelters:
-                delta = s.capacity - s.used
-                if delta > 0 and demand > 0:
-                    if demand < delta:
-                        delta = demand
-                    s.used += delta
-                    demand -= delta
-                    self.assignments.append(Assignment(a, s, delta))
+                if s.capacity_left() > 0:
+                    self.add_assignment(Assignment(a, s, 1))
+                    found = True
+                    break
 
-            if demand > 0:
+            if not found:
                 print("Not enough shelter capacity!")
                 exit(1)
 
 
     def print_solution(self, f):
-        f.write("village -> Number of students -> shelter\n")
+        f.write("village -> shelter\n")
         for a in self.assignments:
             f.write(str(a))
             f.write("\n")

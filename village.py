@@ -15,4 +15,7 @@ class Village(object):
         self.demand = int(parts[-1])
         self.cx     = float(parts[1])
         self.cy     = float(parts[2])
+        # For now we do not split village population over
+        # different shelters.
+        assert(self.demand == 1)
 

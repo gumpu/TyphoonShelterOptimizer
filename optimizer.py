@@ -19,6 +19,8 @@ import   math
 #
 
 # TODO Refactor
+
+# This code assumes we move a whole village at a time.
 def sa(node):
     cooling_factor = 0.9999   # This needs to be properly tuned
     # TODO this needs to be determined automatically.
@@ -61,84 +63,48 @@ def sa(node):
                 old_cost = assignment1.cost() + assignment2.cost()
                 new_cost = new_assignment1.cost() + new_assignment2.cost()
                 gain = old_cost - new_cost
-
                 if gain < 0:
                     u = math.exp(gain/temperature)
                 else:
                     u = 1
                 if random.random() < u:
                     # Do the move
-                    node.assignments[assignment1_id] = new_assignment1
-                    node.assignments[assignment2_id] = new_assignment2
+                    # This can be optimized with a swap() function.
+                    node.remove_assignment(assignment1)
+                    node.remove_assignment(assignment2)
+                    node.add_assignment(new_assignment1)
+                    node.add_assignment(new_assignment2)
                 else:
                     # Don't do the move
-                    #print("No {}".format(gain))
                     pass
+
             else:
-                # Pick two distinct random shelters
+                # Move village to another shelter
                 shelter1_id = node.pick_used_shelter()
                 shelter2_id = node.pick_any_shelter(exclude=shelter1_id)
-
-                assignment_id = node.pick_assignment(shelter1_id)
-                assignment    = node.assignments[assignment_id]
-
-                shelter1 = node.shelters[shelter1_id]
+                assignment1_id = node.pick_assignment(shelter1_id)
+                assignment1    = node.assignments[assignment1_id]
+                # Check if there is room in shelter2
                 shelter2 = node.shelters[shelter2_id]
-                #print("{} {} {}".format(temperature, shelter1_id, shelter2_id))
-                #print("{} {}  -> {}".format(shelter1_id, assignment_id, shelter2_id))
-
-                cost_old   = assignment.cost()
-
-                count_old  = assignment.count
-                cap_target = shelter2.capacity_left()
-
-                delta = min(count_old, cap_target)
-                # print("Count {} -> Cap left {}".format(count_old, cap_target))
-                if delta > 0:
-                    # Compute the gain from moving villagers
-                    # from shelter1 to shelter2
-                    new_assignment1 = None
-                    new_assignment2 = None
-                    if count_old <= cap_target:
-                        # Shelter2 has enough capacity
-                        new_assignment1 = Assignment(
-                                assignment.village, shelter2, count_old)
-                        cost_new = new_assignment1.cost()
-                    elif count_old > cap_target:
-                        # Shelter2 has too little capacity
-                        # only part of the villagers can be moved
-                        new_assignment1 = Assignment(
-                                assignment.village, shelter2, delta)
-                        new_assignment2 = Assignment(
-                                assignment.village, shelter1, count_old - cap_target)
-                        cost_new  = new_assignment1.cost()
-                        cost_new += new_assignment2.cost()
-                        # TODO should take in account new_assignment2
-
-                    # Compute what we would gain by doing this move.
-                    # We want to drive the cost down. This computes
-                    # by how much we drive it down (gain > 0 is good)
-                    gain = cost_old - cost_new
-                    # Should we do this move?
+                if shelter2.capacity_left() > 0:
+                    new_assignment1 = Assignment(
+                            assignment1.village,
+                            node.shelters[shelter2_id],
+                            assignment1.count)
+                    old_cost = assignment1.cost()
+                    new_cost = new_assignment1.cost()
+                    # What do we gain with this?
+                    gain = old_cost - new_cost
                     if gain < 0:
                         u = math.exp(gain/temperature)
                     else:
                         u = 1
                     if random.random() < u:
-                        # Do the move
-                        #print("Yes {}".format(gain))
-                        # TODO This should be in a method
-                        assignment.shelter.used      -= new_assignment1.count
-                        new_assignment1.shelter.used += new_assignment1.count
-                        node.assignments[assignment_id] = new_assignment1
-                        if new_assignment2 is not None:
-                            node.add_assignment(new_assignment2)
+                        node.remove_assignment(assignment1)
+                        node.add_assignment(new_assignment1)
                     else:
                         # Don't do the move
-                        #print("No {}".format(gain))
                         pass
-                else:
-                    pass
 
     print("done")
 

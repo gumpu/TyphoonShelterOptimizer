@@ -12,7 +12,7 @@ dist :
 	git archive --format zip --prefix SSA/ --output ssa.zip master
 
 runlog.csv : optimizer.py node.py shelter.py svgout.py
-	python optimizer.py
+	python optimizer.py ExampleProblems/problem_2.txt
 
 runlog.png : runlog.csv
 	R --vanilla < run_log_plot.r
